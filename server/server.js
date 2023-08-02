@@ -1,18 +1,21 @@
+const cookieParser = require("cookie-parser")
 const express = require("express")
-const dbConnection = require('./configs/dbConnection')
-const cors = require("cors")
-const userRouter = require('./routes/userRouter')
-
 const app = require("./app")
 
-const cookieParser = require("cookie-parser")
-app.use(express.json())
-app.use(userRouter)
+app.use(cookieParser())
+
+const cors = require("cors")
 app.use(cors({
     origin: "*",
     credentials: true
 }))
-app.use(cookieParser())
+
+const dbConnection = require('./configs/dbConnection')
+const userRouter = require('./routes/userRouter')
+app.use(express.json())
+app.use(userRouter)
+
+
 
 
 app.listen(process.env.PORT, async () => {

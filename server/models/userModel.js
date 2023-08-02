@@ -45,25 +45,14 @@ const userSchema = new mongoose.Schema({
 
 }, { timestamps: true })
 
-userSchema.pre('save', async () => {
-    if (!this.modified('password')) {
-        return next()
-    }
-    return await bcrypt.hash(this.password, 10)
-
-})
-
 userSchema.methods = ({
-    comparePassword: async function (password) {
-        return await bcrypt.compare(password, this.password)
-    },
     generateJwtToken: async function () {
         return await jwt.sign({ id: this._id, email: this.email, subscription: this.subscription, role: this.role }, process.env.JWT_SECRET, { expiresIn: '24h' })
     },
     generatePasswordResetToken: async function () {
-        const resetToken = crypto.randomBytes(20).toString('hex')
+        const resetToken = await crypto.randomBytes(20).toString('hex')
 
-        this.forgotPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex')
+        this.forgotPasswordToken = await crypto.createHash('sha256').update(resetToken).digest('hex')
 
         this.forgotPasswordExpiry = date.now() + 15 * 60 * 1000
 

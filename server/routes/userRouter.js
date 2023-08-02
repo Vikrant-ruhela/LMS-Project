@@ -1,4 +1,5 @@
 const express = require("express")
+const authenticate = require("../middleware/authenticate")
 const {
     ping,
     register,
@@ -12,8 +13,8 @@ const userRouter = express.Router()
 userRouter.get('/ping', ping)
 userRouter.post('/register', register)
 userRouter.post('/login', logIn)
-userRouter.get('/logout', logOut)
-userRouter.get('/me', profile)
+userRouter.get('/logout', authenticate, logOut)
+userRouter.get('/me', authenticate, profile)
 
 
 module.exports = userRouter
