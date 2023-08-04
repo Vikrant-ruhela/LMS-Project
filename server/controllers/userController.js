@@ -1,5 +1,7 @@
 const userModel = require('../models/userModel')
 const bcrypt = require('bcrypt')
+const fs = require('fs/promises')
+const cloudinary = require('cloudinary')
 
 const cookieOptions = {
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
@@ -29,10 +31,35 @@ async function register(req, res) {
         }
 
         const hashPassword = await bcrypt.hash(password, 10)
-
         const User = await userModel.create({
-            fullname, email, password: hashPassword
+            fullname, email, password: hashPassword, avatar: {
+                publicId: email,
+                secureUrl: "stringgg"
+            }
         })
+
+        try {
+            const result = await cloudinary.v2.uploader.upload(req.file.path, {
+                folder: 'lms',
+                width: 250,
+                height: 250,
+                gravity: 'faces',
+                crop: 'fill'
+            });
+            if (result) {
+
+                User.avatar.publicId = result.public_id
+                User.avatar.secureUrl = result.secure_url
+                await User.save()
+                fs.rm(`uploads/${req.file.filename}`)
+            } else {
+                throw new Error('uploading error')
+            }
+        } catch (err) {
+            throw new Error('error in uploading files')
+        }
+
+
 
         const token = await User.generateJwtToken()
 
