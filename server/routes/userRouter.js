@@ -5,7 +5,9 @@ const {
     register,
     logIn,
     logOut,
-    profile
+    profile,
+    forgotPassword,
+    resetPassword
 } = require("../controllers/userController")
 const upload = require('../middleware/multer')
 
@@ -16,6 +18,8 @@ userRouter.post('/register', upload.single("avatar"), register)
 userRouter.post('/login', logIn)
 userRouter.get('/logout', authenticate, logOut)
 userRouter.get('/me', authenticate, profile)
+userRouter.post('/reset', forgotPassword)
+userRouter.post('/reset/:token', resetPassword)
 
 
 module.exports = userRouter

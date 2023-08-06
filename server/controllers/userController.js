@@ -1,7 +1,9 @@
+const nodemailer = require('nodemailer')
 const userModel = require('../models/userModel')
 const bcrypt = require('bcrypt')
 const fs = require('fs/promises')
 const cloudinary = require('cloudinary')
+
 
 const cookieOptions = {
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
@@ -136,11 +138,75 @@ async function profile(req, res) {
 
 }
 
+async function forgotPassword(req, res) {
+    try {
+        const { email } = req.body
+
+        if (!email) {
+            throw new Error('Email is required')
+        }
+
+        const user = await userModel.findOne({ email });
+
+        if (!user) {
+            throw new Error('user does not exist')
+        }
+
+        const resetToken = await user.PasswordResetToken()
+
+
+        let mailTransporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.NODEMAILER_MAIL,
+                pass: process.env.NODEMAILER_PASS
+            }
+        });
+
+        let mailDetails = {
+            from: process.env.NODEMAILER_MAIL,
+            to: email,
+            subject: 'Reset Pasword',
+            text: `here is your reset password link which is valid only for 15 mins :  <a href= localhost:3000/reset/${resetToken} target="_blank">Reset your password</a>`
+        };
+
+        mailTransporter.sendMail(mailDetails, function (err, data) {
+            if (err) {
+                throw new Error("email can't send ")
+            } else {
+                console.log('Email sent successfully');
+            }
+        });
+
+
+        res.status(200).json({
+            success: true,
+            message: "email send successfully",
+            resetToken: resetToken,
+        })
+
+
+
+    } catch (error) {
+
+        res.status(400).json({
+            success: false,
+            message: error.message
+        })
+
+    }
+}
+
+async function resetPassword(req, res) {
+
+}
 
 module.exports = {
     ping,
     register,
     logIn,
     logOut,
-    profile
+    profile,
+    forgotPassword,
+    resetPassword
 }

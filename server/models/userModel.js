@@ -49,15 +49,15 @@ userSchema.methods = ({
     generateJwtToken: async function () {
         return await jwt.sign({ id: this._id, email: this.email, subscription: this.subscription, role: this.role }, process.env.JWT_SECRET, { expiresIn: '24h' })
     },
-    generatePasswordResetToken: async function () {
+    PasswordResetToken: async function () {
         const resetToken = await crypto.randomBytes(20).toString('hex')
 
         this.forgotPasswordToken = await crypto.createHash('sha256').update(resetToken).digest('hex')
 
-        this.forgotPasswordExpiry = date.now() + 15 * 60 * 1000
+        this.forgotPasswordExpiry = Date.now() + 15 * 60 * 1000
 
         return resetToken
-    }
+    },
 
 })
 
